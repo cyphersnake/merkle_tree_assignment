@@ -1,0 +1,21 @@
+[package]
+name = "merkle_tree_assignment"
+version = "0.0.1-alpha.1"
+publish = false
+edition = "2021"
+authors = ["cyphersnake <cyphersnake@pm.me>"]
+
+[features]
+default = ["sha3", "sha2"]
+sha3 = ["dep:sha3"]
+sha2 = ["dep:sha2"]
+
+[dependencies]
+generic-array = "0.14.6"
+itertools = "0.10.5"
+num-integer = "0.1.45"
+sha2 = { version = "0.10.6", optional = true }
+sha3 = { version = "0.10.6", optional = true }
+
+[dev-dependencies]
+rand = "0.8.5"
