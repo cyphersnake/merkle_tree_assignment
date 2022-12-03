@@ -13,10 +13,10 @@ pub trait Hasher {
 }
 
 /// Salt for leaf
-/// For protect solution from second preimage atack, we using some salt for leaves
+/// For protect solution from second preimage attack, we using some salt for leaves
 const LEAF: &[u8] = &[0];
-/// Salt for intermdeiate node hashes
-/// For protect solution from second preimage atack, we using some salt for leaves
+/// Salt for intermediate node hashes
+/// For protect solution from second preimage attack, we using some salt for leaves
 const INTERMEDIATE: &[u8] = &[1];
 /// Salt for solo leaf
 /// At the leaves level, there may be a lack of a leaf
@@ -364,12 +364,26 @@ mod merkle_tree_tests {
     }
 
     #[test]
-    fn doubling_second_preimage_atack() {
+    fn doubling_second_preimage_attack_case1() {
         use ::sha2::Sha256;
         type MerkleTree = super::MerkleTree<sha2::Wrapper<Sha256>>;
 
         let first = [b"a", b"b", b"c"];
         let second = [b"a", b"b", b"c", b"c"];
+
+        assert_ne!(
+            MerkleTree::from_iter(first.iter()).calculate_root(),
+            MerkleTree::from_iter(second.iter()).calculate_root(),
+        );
+    }
+
+    #[test]
+    fn doubling_second_preimage_attack_case2() {
+        use ::sha2::Sha256;
+        type MerkleTree = super::MerkleTree<sha2::Wrapper<Sha256>>;
+
+        let first = [b"1", b"2", b"3", b"4", b"5", b"6"];
+        let second = [b"1", b"2", b"3", b"4", b"5", b"6", b"5", b"6"];
 
         assert_ne!(
             MerkleTree::from_iter(first.iter()).calculate_root(),
