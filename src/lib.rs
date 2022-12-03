@@ -113,12 +113,15 @@ where
     }
 
     pub fn node_count(&self) -> usize {
-        let mut leaves_count = self.leaves_count();
-        let mut node_count = leaves_count;
+        let mut level_node_count = self.leaves_count();
+        let mut node_count = 1;
 
-        while leaves_count != 1 {
-            node_count += leaves_count;
-            leaves_count /= 2;
+        while level_node_count != 1 {
+            node_count += level_node_count;
+            level_node_count = level_node_count
+                .checked_add(1)
+                .and_then(|leaves_count_plus_1| leaves_count_plus_1.checked_div(2))
+                .expect("Your tree is too big");
         }
 
         node_count
