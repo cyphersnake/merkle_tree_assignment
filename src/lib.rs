@@ -181,18 +181,31 @@ pub struct NodeIndex {
 pub fn get_leaf_openning(leaves_count: usize, mut current_index: usize) -> Vec<NodeIndex> {
     use num_integer::Integer;
 
+    let mut level_lenght = leaves_count;
     (0..get_merkle_tree_height(leaves_count))
-        .map(|level| {
-            let (quitient, remainder) = current_index.div_rem(&2);
+        .flat_map(|level| {
+            let (next_level_index, remainder) = current_index.div_rem(&2);
 
-            let index = if remainder == 0 {
-                current_index + 1
-            } else {
-                current_index - 1
+            let index = match remainder {
+                0 if current_index >= level_lenght - 1 => None,
+                0 => Some(current_index + 1),
+                1 => Some(current_index - 1),
+                _n => unreachable!(
+                    "When divided by two, there can be no remainder other than 0 and 1."
+                ),
             };
-            current_index = quitient;
 
-            NodeIndex { level, index }
+            current_index = next_level_index;
+
+            level_lenght = level_lenght
+                .checked_add(1)
+                .and_then(|lenght| lenght.checked_div(2))
+                .expect("TODO");
+
+            Some(NodeIndex {
+                level,
+                index: index?,
+            })
         })
         .collect()
 }
@@ -242,6 +255,23 @@ mod get_leaf_opening_tests {
                 NodeIndex { level: 1, index: 1 },
                 NodeIndex { level: 2, index: 1 },
                 NodeIndex { level: 3, index: 1 }
+            ]
+        );
+
+        assert_eq!(get_leaf_openning(3, 2), [NodeIndex { level: 1, index: 0 },]);
+        assert_eq!(
+            get_leaf_openning(6, 5),
+            [
+                NodeIndex { level: 0, index: 4 },
+                NodeIndex { level: 2, index: 0 },
+            ]
+        );
+
+        assert_eq!(
+            get_leaf_openning(10, 9),
+            [
+                NodeIndex { level: 0, index: 8 },
+                NodeIndex { level: 3, index: 0 },
             ]
         );
     }
