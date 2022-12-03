@@ -3,6 +3,12 @@ extern crate test;
 
 /// Trait for hashing data inside a merkle tree
 /// Using 'sha*' crates like interface, because it's more flexible
+///
+/// When integrating libraries, it is supposed to use struct-wrappers,
+/// because most often in third-party crates, hash functions are presented
+/// as traits, and the general implementation (for a trait) will block other similar
+/// ones.
+/// Therefore, wrappers are more preferable here.
 pub trait Hasher {
     /// Output type
     type Hash;
@@ -79,6 +85,10 @@ impl<H: Hasher> MerkleTree<H>
 where
     H::Hash: AsRef<[u8]>,
 {
+    pub fn empty_root() -> H::Hash {
+        H::hash_leaf([0])
+    }
+
     pub fn is_empty(&self) -> bool {
         self.leaves.is_empty()
     }
@@ -130,7 +140,7 @@ where
             level_nodes = calculate_next_level(&level_nodes);
         }
 
-        level_nodes.pop().unwrap_or_else(|| H::hash_leaf([0]))
+        level_nodes.pop().unwrap_or_else(|| Self::empty_root())
     }
 
     pub fn get_leaf_openning(&self, index: usize) -> Vec<NodeIndex> {
@@ -139,6 +149,9 @@ where
 }
 
 pub fn get_merkle_tree_height(leaves_count: usize) -> usize {
+    // Since at each level there will be doubling to an even number,
+    // the desired number can be found using the logarithm with a base
+    // of two from the nearest power of two of count of leaves
     (leaves_count as u64).next_power_of_two().trailing_zeros() as usize
 }
 
@@ -200,7 +213,7 @@ pub fn get_leaf_openning(leaves_count: usize, mut current_index: usize) -> Vec<N
             level_lenght = level_lenght
                 .checked_add(1)
                 .and_then(|lenght| lenght.checked_div(2))
-                .expect("TODO");
+                .expect("Your tree is too tall!");
 
             Some(NodeIndex {
                 level,
