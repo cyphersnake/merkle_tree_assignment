@@ -3,6 +3,8 @@
 ## Impl note
 For simplicity, a tree was made that does not store intermediate nodes and considers the root at the time of the request. In general, the transition to incremental counting can be done quite simply.
 
+Using nightly-toolchain, only for `#[bench]`
+
 ## Challenge description
 Implement a Merkle Tree in Rust. Our Merkle Trees have a height >= 0. The height is the number of levels above the leaves. This means the simplest tree has height 0 and is just a single value hashed into a single leaf. Below you can find an example, where the Vx are the values stored into the Merkle Tree and h is some hash function:
 
