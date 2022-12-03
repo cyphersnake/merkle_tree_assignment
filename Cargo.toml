@@ -1,6 +1,6 @@
 [package]
 name = "merkle_tree_assignment"
-version = "0.0.1-alpha.2"
+version = "0.0.1-alpha.3"
 publish = false
 edition = "2021"
 authors = ["cyphersnake <cyphersnake@pm.me>"]

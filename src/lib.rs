@@ -101,15 +101,27 @@ where
         get_merkle_tree_height(self.leaves_count())
     }
 
-    /// Each next level contains half as many nodes.
+    /// Each next level contains half as many operation.
     /// This is a convergent series, which can be represented as:
     /// Sum[2^k, {k, 0, n}] = 2^(n+1) - 1
-    pub fn node_count(&self) -> usize {
+    pub fn operations_count(&self) -> usize {
         (1 << self
             .height()
             .checked_add(1)
             .expect("Your tree is too tall!"))
             - 1
+    }
+
+    pub fn node_count(&self) -> usize {
+        let mut leaves_count = self.leaves_count();
+        let mut node_count = leaves_count;
+
+        while leaves_count != 1 {
+            node_count += leaves_count;
+            leaves_count /= 2;
+        }
+
+        node_count
     }
 
     pub fn insert_bytes(&mut self, bytes: impl AsRef<[u8]>) {
@@ -499,18 +511,25 @@ mod merkle_tree_tests {
 
     #[cfg(feature = "sha3")]
     #[test]
-    fn node_count() {
+    fn operations_count() {
         let merkle_tree = get_random_merkle_tree::<2, sha3::Wrapper<sha3::Keccak256>>();
         assert_eq!(merkle_tree.height(), 2);
-        assert_eq!(merkle_tree.node_count(), 7);
+        assert_eq!(merkle_tree.operations_count(), 7);
+
+        {
+            let leaves: [&[u8]; 3] = [b"first", b"second", b"thirs"];
+            let tree = MerkleTree::<StdDefaultHasher>::from_iter(leaves.iter());
+            assert_eq!(tree.node_count(), 6);
+            assert_eq!(tree.operations_count(), 7);
+        }
 
         assert_eq!(
-            get_random_merkle_tree::<10, sha3::Wrapper<sha3::Keccak256>>().node_count(),
+            get_random_merkle_tree::<10, sha3::Wrapper<sha3::Keccak256>>().operations_count(),
             2047
         );
 
         assert_eq!(
-            get_random_merkle_tree::<20, sha3::Wrapper<sha3::Keccak256>>().node_count(),
+            get_random_merkle_tree::<20, sha3::Wrapper<sha3::Keccak256>>().operations_count(),
             2_097_151
         );
     }
